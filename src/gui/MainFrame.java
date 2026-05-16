@@ -235,16 +235,13 @@ public class MainFrame extends JFrame {
                 bentuk = prisma;
             }
 
-            // Polymorphism: method info() berbeda tergantung objek asli
-            taHasil.setText("POLYMORPHISM Demo:\n");
-            taHasil.append("Tipe variabel : Bentuk\n");
-            taHasil.append("Objek asli    : " + bentuk.getClass().getSimpleName() + "\n\n");
+            taHasil.setText(bentuk.getClass().getSimpleName() + "\n");
+            taHasil.append("=========================================\n\n");
             taHasil.append(bentuk.info() + "\n\n");
-            taHasil.append("--- Detail (Overloading info(boolean)) ---\n");
-            taHasil.append(bentuk.info(true) + "\n\n");
+            taHasil.append("LANGKAH PERHITUNGAN\n");
+            taHasil.append("-----------------------------------------\n");
 
             if (bentuk instanceof Calculatable) {
-                taHasil.append("--- Langkah Perhitungan ---\n");
                 taHasil.append(((Calculatable) bentuk).calculate() + "\n");
             }
 
@@ -278,16 +275,17 @@ public class MainFrame extends JFrame {
             }
             
             // Tampilkan info di panel hasil
-            taHasil.setText("=== MULTITHREADING MODE ===\n\n");
-            taHasil.append("Jumlah data per thread : " + jumlahData + "\n");
-            taHasil.append("Total data (3 thread)  : " + (jumlahData * 3) + "\n");
-            taHasil.append("Nilai random           : > 99.000 (Math.random())\n\n");
-            taHasil.append("POLYMORPHISM:\n");
-            taHasil.append("  Thread 1 → LayangLayang.hitungLuas()\n");
-            taHasil.append("  Thread 2 → LimasLayangLayang.hitungVolume()\n");
-            taHasil.append("  Thread 3 → PrismaLayangLayang.hitungVolume()\n");
-            taHasil.append("  Nama method sama, perilaku beda!\n\n");
-            taHasil.append("Lihat log thread di bawah ↓\n");
+            taHasil.setText("MULTITHREADING MODE\n");
+            taHasil.append("=========================================\n");
+            taHasil.append("Data per thread    : " + jumlahData + "\n");
+            taHasil.append("Total data         : " + (jumlahData * 3) + "\n");
+            taHasil.append("Nilai random       : > 99.000\n");
+            taHasil.append("Generator          : Math.random()\n");
+            taHasil.append("=========================================\n\n");
+            taHasil.append("Thread 1  ->  LayangLayang\n");
+            taHasil.append("Thread 2  ->  LimasLayangLayang\n");
+            taHasil.append("Thread 3  ->  PrismaLayangLayang\n\n");
+            taHasil.append("Lihat log thread di bawah.\n");
             
             // Jalankan thread
             threadManager = new ThreadManager(taLog);
