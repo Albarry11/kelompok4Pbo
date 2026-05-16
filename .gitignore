@@ -24,3 +24,6 @@ Thumbs.db
 # Temp files
 temp_extract/
 extract_pptx.ps1
+
+# Materi dosen
+materi/
