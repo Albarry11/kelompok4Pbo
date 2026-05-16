@@ -20,21 +20,21 @@ public class ThreadManager {
         this.logArea = logArea;
     }
     
-    public void jalankanSemuaThread(int jumlahData) {
+    public void jalankanSemuaThread(int dataLayang, int dataLimas, int dataPrisma) {
         
         SwingUtilities.invokeLater(() -> logArea.setText(""));
         
+        int total = dataLayang + dataLimas + dataPrisma;
+        
         appendLog("=========================================================");
         appendLog("  MULTITHREADING - PERHITUNGAN PARALEL");
-        appendLog("  Data per thread  : " + jumlahData);
-        appendLog("  Total data       : " + (jumlahData * 3));
         appendLog("  Nilai random     : > 99.000 (Math.random())");
         appendLog("=========================================================");
         appendLog("");
         
-        runnableLayang = new HitungThread("LAYANG", "Layang-Layang", logArea, jumlahData);
-        runnableLimas = new HitungThread("LIMAS", "Limas", logArea, jumlahData);
-        runnablePrisma = new HitungThread("PRISMA", "Prisma", logArea, jumlahData);
+        runnableLayang = new HitungThread("LAYANG", "Layang-Layang", logArea, dataLayang);
+        runnableLimas = new HitungThread("LIMAS", "Limas", logArea, dataLimas);
+        runnablePrisma = new HitungThread("PRISMA", "Prisma", logArea, dataPrisma);
         
         threadLayang = new Thread(runnableLayang, "Thread-Layang");
         threadLimas = new Thread(runnableLimas, "Thread-Limas");
@@ -46,11 +46,13 @@ public class ThreadManager {
         
         appendLog("  KONFIGURASI");
         appendLog("  ---------------------------------------------------------");
-        appendLog("  Thread           | Prioritas | Target");
+        appendLog("  Thread           | Prioritas | Data        | Target");
         appendLog("  ---------------------------------------------------------");
-        appendLog("  Thread-Layang    | 10 (MAX)  | LayangLayang");
-        appendLog("  Thread-Limas     |  5 (NORM) | LimasLayangLayang");
-        appendLog("  Thread-Prisma    |  1 (MIN)  | PrismaLayangLayang");
+        appendLog("  Thread-Layang    | 10 (MAX)  | " + pad(fmt(dataLayang)) + " | LayangLayang");
+        appendLog("  Thread-Limas     |  5 (NORM) | " + pad(fmt(dataLimas)) + " | LimasLayangLayang");
+        appendLog("  Thread-Prisma    |  1 (MIN)  | " + pad(fmt(dataPrisma)) + " | PrismaLayangLayang");
+        appendLog("  ---------------------------------------------------------");
+        appendLog("  Total            |           | " + pad(fmt(total)) + " |");
         appendLog("  ---------------------------------------------------------");
         appendLog("");
         appendLog("  RANTAI INTERRUPT");
@@ -78,20 +80,21 @@ public class ThreadManager {
                 threadPrisma.join();
                 
                 long elapsed = System.currentTimeMillis() - startTime;
+                int totalDone = runnableLayang.getDataSelesai() + runnableLimas.getDataSelesai() + runnablePrisma.getDataSelesai();
                 
                 appendLog("");
                 appendLog("=========================================================");
                 appendLog("  REKAP");
                 appendLog("=========================================================");
-                appendLog("  Waktu eksekusi   : " + elapsed + " ms");
+                appendLog("  Waktu eksekusi   : " + fmt(elapsed) + " ms");
                 appendLog("  ---------------------------------------------------------");
                 appendLog("  Thread           | Status  | Data Diproses");
                 appendLog("  ---------------------------------------------------------");
-                appendLog("  Thread-Layang    | " + status(runnableLayang) + " | " + runnableLayang.getDataSelesai());
-                appendLog("  Thread-Limas     | " + status(runnableLimas) + " | " + runnableLimas.getDataSelesai());
-                appendLog("  Thread-Prisma    | " + status(runnablePrisma) + " | " + runnablePrisma.getDataSelesai());
+                appendLog("  Thread-Layang    | " + status(runnableLayang) + " | " + fmt(runnableLayang.getDataSelesai()));
+                appendLog("  Thread-Limas     | " + status(runnableLimas) + " | " + fmt(runnableLimas.getDataSelesai()));
+                appendLog("  Thread-Prisma    | " + status(runnablePrisma) + " | " + fmt(runnablePrisma.getDataSelesai()));
                 appendLog("  ---------------------------------------------------------");
-                appendLog("  Total            |         | " + (runnableLayang.getDataSelesai() + runnableLimas.getDataSelesai() + runnablePrisma.getDataSelesai()));
+                appendLog("  Total            |         | " + fmt(totalDone));
                 appendLog("=========================================================");
                 
             } catch (InterruptedException e) {
@@ -102,6 +105,18 @@ public class ThreadManager {
     
     private String status(HitungThread t) {
         return t.isSelesai() ? "Selesai" : "Gagal  ";
+    }
+    
+    /** Format angka dengan titik per 3 digit */
+    private String fmt(long angka) {
+        java.text.DecimalFormatSymbols sym = new java.text.DecimalFormatSymbols(new java.util.Locale("id", "ID"));
+        sym.setGroupingSeparator('.');
+        return new java.text.DecimalFormat("#,###", sym).format(angka);
+    }
+    
+    /** Padding kanan agar kolom rata */
+    private String pad(String s) {
+        return String.format("%-11s", s);
     }
     
     public void hentikanSemua() {

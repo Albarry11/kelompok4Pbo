@@ -258,43 +258,31 @@ public class MainFrame extends JFrame {
      * PILAR OOP: Multithreading + Polymorphism
      */
     private void hitungSemuaThread() {
-        // Tanya jumlah data
-        String input = JOptionPane.showInputDialog(this,
-            "Masukkan jumlah data random per thread:\n" +
-            "(Setiap data akan di-generate > 99.000 via Math.random())\n" +
-            "Rekomendasi: 100000",
-            "Konfigurasi Multithreading", JOptionPane.QUESTION_MESSAGE);
+        ThreadConfigDialog dialog = new ThreadConfigDialog(this);
+        int[] data = dialog.showDialog();
         
-        if (input == null || input.trim().isEmpty()) return;
+        if (data == null) return; // user batal
         
-        try {
-            int jumlahData = Integer.parseInt(input.trim());
-            if (jumlahData <= 0) {
-                JOptionPane.showMessageDialog(this, "Jumlah data harus > 0!", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            
-            // Tampilkan info di panel hasil
-            taHasil.setText("MULTITHREADING MODE\n");
-            taHasil.append("=========================================\n");
-            taHasil.append("Data per thread    : " + jumlahData + "\n");
-            taHasil.append("Total data         : " + (jumlahData * 3) + "\n");
-            taHasil.append("Nilai random       : > 99.000\n");
-            taHasil.append("Generator          : Math.random()\n");
-            taHasil.append("=========================================\n\n");
-            taHasil.append("Thread 1  ->  LayangLayang\n");
-            taHasil.append("Thread 2  ->  LimasLayangLayang\n");
-            taHasil.append("Thread 3  ->  PrismaLayangLayang\n\n");
-            taHasil.append("Lihat log thread di bawah.\n");
-            
-            // Jalankan thread
-            threadManager = new ThreadManager(taLog);
-            threadManager.jalankanSemuaThread(jumlahData);
-            btnStop.setEnabled(true);
-            
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Input harus angka bulat!", "Error", JOptionPane.ERROR_MESSAGE);
-        }
+        int d1 = data[0], d2 = data[1], d3 = data[2];
+        int total = d1 + d2 + d3;
+        
+        // Tampilkan info di panel hasil
+        taHasil.setText("MULTITHREADING MODE\n");
+        taHasil.append("=========================================\n");
+        taHasil.append("Thread Layang      : " + ThreadConfigDialog.formatAngka(d1) + " data\n");
+        taHasil.append("Thread Limas       : " + ThreadConfigDialog.formatAngka(d2) + " data\n");
+        taHasil.append("Thread Prisma      : " + ThreadConfigDialog.formatAngka(d3) + " data\n");
+        taHasil.append("-----------------------------------------\n");
+        taHasil.append("Total              : " + ThreadConfigDialog.formatAngka(total) + " data\n");
+        taHasil.append("Nilai random       : > 99.000\n");
+        taHasil.append("Generator          : Math.random()\n");
+        taHasil.append("=========================================\n\n");
+        taHasil.append("Lihat log thread di bawah.\n");
+        
+        // Jalankan thread
+        threadManager = new ThreadManager(taLog);
+        threadManager.jalankanSemuaThread(d1, d2, d3);
+        btnStop.setEnabled(true);
     }
 
     private void resetForm() {
