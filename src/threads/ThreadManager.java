@@ -97,6 +97,22 @@ public class ThreadManager {
                 appendLog("  Thread-Prisma    | " + status(runnablePrisma) + " | " + fmt(runnablePrisma.getDataSelesai()));
                 appendLog("  ---------------------------------------------------------");
                 appendLog("  Total            |         | " + fmt(totalDone));
+                appendLog("  ---------------------------------------------------------");
+                appendLog("  RINCIAN HASIL PER THREAD:");
+                // Layang
+                appendLog("  Thread-Layang    | Total Luas = " + fmtDouble(runnableLayang.getTotalLuas())
+                    + " | Total Keliling = " + fmtDouble(runnableLayang.getTotalKeliling())
+                    + " | Rata-rata Luas = " + fmtDouble(runnableLayang.getTotalLuas() / Math.max(1, runnableLayang.getDataSelesai())));
+                // Limas
+                appendLog("  Thread-Limas     | Total Luas = " + fmtDouble(runnableLimas.getTotalLuas())
+                    + " | Total Volume = " + fmtDouble(runnableLimas.getTotalVolume())
+                    + " | Total LP = " + fmtDouble(runnableLimas.getTotalLuasPermukaan())
+                    + " | Rata-rata Luas = " + fmtDouble(runnableLimas.getTotalLuas() / Math.max(1, runnableLimas.getDataSelesai())));
+                // Prisma
+                appendLog("  Thread-Prisma    | Total Luas = " + fmtDouble(runnablePrisma.getTotalLuas())
+                    + " | Total Volume = " + fmtDouble(runnablePrisma.getTotalVolume())
+                    + " | Total LP = " + fmtDouble(runnablePrisma.getTotalLuasPermukaan())
+                    + " | Rata-rata Luas = " + fmtDouble(runnablePrisma.getTotalLuas() / Math.max(1, runnablePrisma.getDataSelesai())));
                 appendLog("=========================================================");
                 
                 // Tulis juga ringkasan hasil ke panel hasil (taHasil) jika tersedia

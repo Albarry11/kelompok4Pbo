@@ -166,4 +166,8 @@ public class HitungThread implements Runnable {
     public double getTotalLuas() { return totalLuas; }
     public double getTotalVolume() { return totalVolume; }
     public int getDataSelesai() { return dataSelesai; }
+
+    // Tambahan getter untuk nilai lain agar bisa direkap
+    public double getTotalKeliling() { return totalKeliling; }
+    public double getTotalLuasPermukaan() { return totalLuasPermukaan; }
 }
