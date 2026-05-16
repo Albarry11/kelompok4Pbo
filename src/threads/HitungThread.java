@@ -1,5 +1,6 @@
 package threads;
 
+import model.*;
 import interfaces.Calculatable;
 import javax.swing.SwingUtilities;
 import javax.swing.JTextArea;
@@ -7,49 +8,58 @@ import javax.swing.JTextArea;
 /**
  * Class HitungThread
  * ==================
- * Thread untuk melakukan perhitungan geometri secara paralel.
+ * Thread untuk melakukan perhitungan geometri secara paralel
+ * dengan data random dalam jumlah banyak (> 99.000).
  * 
  * Sesuai materi slide 7 (Multithreading):
  * - Implements Runnable interface
- * - Siklus hidup thread: new → runnable → running → blocked → dead
  * - Thread bisa di-interrupt oleh thread lain
  * - Menggunakan synchronized untuk sinkronisasi
  * 
- * PILAR OOP: Multithreading
- *            Encapsulation (atribut private)
- *            Polymorphism (Calculatable interface)
+ * Sesuai ketentuan dosen:
+ * - Data input banyak, > 99.000, pakai Math.random()
+ * 
+ * PILAR OOP: Multithreading, Encapsulation, Polymorphism
  */
 public class HitungThread implements Runnable {
     
     // ===== ENCAPSULATION =====
-    private Calculatable bentuk;          // objek yang akan dihitung (Polymorphism!)
-    private String namaBentuk;            // nama thread/bentuk
-    private JTextArea logArea;            // area untuk menampilkan log di GUI
-    private volatile boolean selesai;     // flag apakah thread sudah selesai (volatile sesuai slide 2)
-    private String hasil;                 // hasil perhitungan
-    private Thread nextThread;            // thread yang akan di-interrupt setelah selesai
-    private long delayMs;                 // delay simulasi proses
+    private String namaBentuk;
+    private String tipeBentuk;           // "LAYANG", "LIMAS", "PRISMA"
+    private JTextArea logArea;
+    private volatile boolean selesai;    // volatile sesuai materi slide 2
+    private Thread nextThread;
+    private int jumlahData;              // jumlah data random yang diproses
+    
+    // Hasil agregat
+    private double totalLuas;
+    private double totalKeliling;
+    private double totalVolume;
+    private double totalLuasPermukaan;
+    private int dataSelesai;
     
     /**
      * Constructor
-     * @param bentuk objek Calculatable yang akan dihitung
+     * @param tipeBentuk "LAYANG", "LIMAS", atau "PRISMA"
      * @param namaBentuk nama untuk identifikasi thread
      * @param logArea JTextArea untuk log output
-     * @param delayMs delay dalam milidetik untuk simulasi proses
+     * @param jumlahData jumlah data random yang akan diproses
      */
-    public HitungThread(Calculatable bentuk, String namaBentuk, JTextArea logArea, long delayMs) {
-        this.bentuk = bentuk;
+    public HitungThread(String tipeBentuk, String namaBentuk, JTextArea logArea, int jumlahData) {
+        this.tipeBentuk = tipeBentuk;
         this.namaBentuk = namaBentuk;
         this.logArea = logArea;
+        this.jumlahData = jumlahData;
         this.selesai = false;
-        this.hasil = "";
-        this.nextThread = null;
-        this.delayMs = delayMs;
+        this.totalLuas = 0;
+        this.totalKeliling = 0;
+        this.totalVolume = 0;
+        this.totalLuasPermukaan = 0;
+        this.dataSelesai = 0;
     }
     
     /**
      * Set thread yang akan di-interrupt ketika thread ini selesai
-     * Sesuai ketentuan: "thread bisa saling menginterrupt"
      * @param nextThread thread yang akan di-interrupt
      */
     public void setNextThread(Thread nextThread) {
@@ -58,9 +68,8 @@ public class HitungThread implements Runnable {
     
     /**
      * Method run() - inti eksekusi thread
-     * Sesuai materi slide 7: method run() dieksekusi saat thread.start()
-     * 
-     * PILAR OOP: Multithreading
+     * Memproses banyak data random dengan nilai > 99.000
+     * menggunakan Math.random()
      */
     @Override
     public void run() {
@@ -68,82 +77,154 @@ public class HitungThread implements Runnable {
         
         appendLog("▶ [" + threadName + "] Thread " + namaBentuk + " DIMULAI");
         appendLog("  [" + threadName + "] Prioritas: " + Thread.currentThread().getPriority());
+        appendLog("  [" + threadName + "] Jumlah data random: " + jumlahData);
+        appendLog("  [" + threadName + "] Semua nilai di-generate > 99.000 via Math.random()\n");
         
         try {
-            // Fase 1: Memulai perhitungan
-            appendLog("  [" + threadName + "] Memproses perhitungan " + namaBentuk + "...");
-            Thread.sleep(delayMs); // Simulasi proses perhitungan
-            
-            // Cek apakah thread sudah di-interrupt
-            if (Thread.currentThread().isInterrupted()) {
-                appendLog("⚠ [" + threadName + "] " + namaBentuk + " DIINTERRUPT sebelum selesai!");
-                throw new InterruptedException();
+            for (int i = 0; i < jumlahData; i++) {
+                
+                // Cek interrupt
+                if (Thread.currentThread().isInterrupted()) {
+                    throw new InterruptedException();
+                }
+                
+                // Generate nilai random > 99.000 pakai Math.random()
+                double d1 = Math.random() * 900000 + 99000;   // 99.000 - 999.000
+                double d2 = Math.random() * 900000 + 99000;
+                double sisiA = Math.random() * 900000 + 99000;
+                double sisiB = Math.random() * 900000 + 99000;
+                double tinggi = Math.random() * 900000 + 99000;
+                
+                // Hitung berdasarkan tipe bentuk (POLYMORPHISM via switch)
+                switch (tipeBentuk) {
+                    case "LAYANG":
+                        LayangLayang ll = new LayangLayang(d1, d2, sisiA, sisiB);
+                        // synchronized untuk akses shared data
+                        synchronized (this) {
+                            totalLuas += ll.hitungLuas();
+                            totalKeliling += ll.hitungKeliling();
+                        }
+                        break;
+                        
+                    case "LIMAS":
+                        LayangLayang alasLimas = new LayangLayang(d1, d2, sisiA, sisiB);
+                        LimasLayangLayang limas = new LimasLayangLayang(alasLimas, tinggi);
+                        synchronized (this) {
+                            totalLuas += limas.hitungLuas();
+                            totalVolume += limas.hitungVolume();
+                            totalLuasPermukaan += limas.hitungLuasPermukaan();
+                        }
+                        break;
+                        
+                    case "PRISMA":
+                        LayangLayang alasPrisma = new LayangLayang(d1, d2, sisiA, sisiB);
+                        PrismaLayangLayang prisma = new PrismaLayangLayang(alasPrisma, tinggi);
+                        synchronized (this) {
+                            totalLuas += prisma.hitungLuas();
+                            totalVolume += prisma.hitungVolume();
+                            totalLuasPermukaan += prisma.hitungLuasPermukaan();
+                        }
+                        break;
+                }
+                
+                dataSelesai = i + 1;
+                
+                // Log progres setiap 25%
+                if (dataSelesai == jumlahData / 4 || dataSelesai == jumlahData / 2 
+                    || dataSelesai == (jumlahData * 3) / 4) {
+                    int persen = (dataSelesai * 100) / jumlahData;
+                    appendLog("  [" + threadName + "] Progres: " + persen + "% (" + dataSelesai + "/" + jumlahData + ")");
+                }
             }
             
-            // Fase 2: Lakukan perhitungan (synchronized untuk thread-safety)
-            synchronized (this) {
-                hasil = bentuk.calculate();
-                appendLog("  [" + threadName + "] Hasil perhitungan:\n" + hasil);
-            }
-            
-            Thread.sleep(delayMs / 2); // Sedikit delay lagi
-            
-            // Fase 3: Selesai
+            // Selesai
             selesai = true;
-            appendLog("✓ [" + threadName + "] Thread " + namaBentuk + " SELESAI");
+            appendLog("✓ [" + threadName + "] " + namaBentuk + " SELESAI (" + dataSelesai + " data diproses)");
+            logHasil(threadName);
             
-            // Interrupt thread berikutnya (jika ada)
+            // Interrupt thread berikutnya
             if (nextThread != null && nextThread.isAlive()) {
-                appendLog("⚡ [" + threadName + "] Mengirim INTERRUPT ke thread " + nextThread.getName());
+                appendLog("⚡ [" + threadName + "] Mengirim INTERRUPT ke " + nextThread.getName());
                 nextThread.interrupt();
             }
             
         } catch (InterruptedException e) {
-            // Thread di-interrupt oleh thread lain
-            appendLog("⚠ [" + threadName + "] " + namaBentuk + " menerima INTERRUPT!");
-            appendLog("  [" + threadName + "] Menangani interrupt... melanjutkan perhitungan");
+            appendLog("⚠ [" + threadName + "] " + namaBentuk + " menerima INTERRUPT! (" + dataSelesai + "/" + jumlahData + " selesai)");
+            appendLog("  [" + threadName + "] Menangani interrupt... melanjutkan sisa data");
             
-            // Tetap lakukan perhitungan meskipun di-interrupt
-            synchronized (this) {
-                hasil = bentuk.calculate();
-                appendLog("  [" + threadName + "] Hasil setelah interrupt:\n" + hasil);
+            // Lanjutkan sisa data setelah interrupt
+            for (int i = dataSelesai; i < jumlahData; i++) {
+                double d1 = Math.random() * 900000 + 99000;
+                double d2 = Math.random() * 900000 + 99000;
+                double sisiA = Math.random() * 900000 + 99000;
+                double sisiB = Math.random() * 900000 + 99000;
+                double tinggi = Math.random() * 900000 + 99000;
+                
+                switch (tipeBentuk) {
+                    case "LAYANG":
+                        LayangLayang ll = new LayangLayang(d1, d2, sisiA, sisiB);
+                        synchronized (this) {
+                            totalLuas += ll.hitungLuas();
+                            totalKeliling += ll.hitungKeliling();
+                        }
+                        break;
+                    case "LIMAS":
+                        LimasLayangLayang limas = new LimasLayangLayang(d1, d2, sisiA, sisiB, tinggi);
+                        synchronized (this) {
+                            totalLuas += limas.hitungLuas();
+                            totalVolume += limas.hitungVolume();
+                            totalLuasPermukaan += limas.hitungLuasPermukaan();
+                        }
+                        break;
+                    case "PRISMA":
+                        PrismaLayangLayang prisma = new PrismaLayangLayang(d1, d2, sisiA, sisiB, tinggi);
+                        synchronized (this) {
+                            totalLuas += prisma.hitungLuas();
+                            totalVolume += prisma.hitungVolume();
+                            totalLuasPermukaan += prisma.hitungLuasPermukaan();
+                        }
+                        break;
+                }
+                dataSelesai = i + 1;
             }
             
             selesai = true;
-            appendLog("✓ [" + threadName + "] " + namaBentuk + " SELESAI (setelah interrupt)");
-            
-            // Reset interrupt status
-            Thread.currentThread().interrupt();
+            appendLog("✓ [" + threadName + "] " + namaBentuk + " SELESAI setelah interrupt (" + dataSelesai + " data)");
+            logHasil(threadName);
         }
     }
     
     /**
-     * Append log ke JTextArea secara thread-safe
-     * Menggunakan SwingUtilities.invokeLater untuk update GUI dari thread lain
-     * @param message pesan yang akan ditampilkan
+     * Log hasil agregat perhitungan
      */
+    private void logHasil(String threadName) {
+        appendLog("  [" + threadName + "] ─── HASIL AGREGAT ───");
+        appendLog("  [" + threadName + "] Total Luas          : " + String.format("%,.2f", totalLuas));
+        if (tipeBentuk.equals("LAYANG")) {
+            appendLog("  [" + threadName + "] Total Keliling       : " + String.format("%,.2f", totalKeliling));
+        }
+        if (tipeBentuk.equals("LIMAS") || tipeBentuk.equals("PRISMA")) {
+            appendLog("  [" + threadName + "] Total Volume         : " + String.format("%,.2f", totalVolume));
+            appendLog("  [" + threadName + "] Total Luas Permukaan : " + String.format("%,.2f", totalLuasPermukaan));
+        }
+        appendLog("  [" + threadName + "] Rata-rata Luas       : " + String.format("%,.2f", totalLuas / jumlahData));
+        appendLog("");
+    }
+    
     private void appendLog(String message) {
         if (logArea != null) {
             SwingUtilities.invokeLater(() -> {
                 logArea.append(message + "\n");
-                // Auto-scroll ke bawah
                 logArea.setCaretPosition(logArea.getDocument().getLength());
             });
         }
-        System.out.println(message); // juga print ke console
+        System.out.println(message);
     }
     
-    // ===== GETTER (Encapsulation) =====
-    
-    public boolean isSelesai() {
-        return selesai;
-    }
-    
-    public String getHasil() {
-        return hasil;
-    }
-    
-    public String getNamaBentuk() {
-        return namaBentuk;
-    }
+    // ===== GETTER =====
+    public boolean isSelesai() { return selesai; }
+    public String getNamaBentuk() { return namaBentuk; }
+    public double getTotalLuas() { return totalLuas; }
+    public double getTotalVolume() { return totalVolume; }
+    public int getDataSelesai() { return dataSelesai; }
 }

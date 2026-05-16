@@ -257,40 +257,45 @@ public class MainFrame extends JFrame {
 
     /**
      * Hitung semua bentuk menggunakan Multithreading
+     * Sesuai ketentuan dosen: data > 99.000 pakai Math.random()
      * PILAR OOP: Multithreading + Polymorphism
      */
     private void hitungSemuaThread() {
+        // Tanya jumlah data
+        String input = JOptionPane.showInputDialog(this,
+            "Masukkan jumlah data random per thread:\n" +
+            "(Setiap data akan di-generate > 99.000 via Math.random())\n" +
+            "Rekomendasi: 100000",
+            "Konfigurasi Multithreading", JOptionPane.QUESTION_MESSAGE);
+        
+        if (input == null || input.trim().isEmpty()) return;
+        
         try {
-            double d1 = Double.parseDouble(tfD1.getText().trim());
-            double d2 = Double.parseDouble(tfD2.getText().trim());
-            double sA = Double.parseDouble(tfSisiA.getText().trim());
-            double sB = Double.parseDouble(tfSisiB.getText().trim());
-            double t = 10.0;
-            try { t = Double.parseDouble(tfTinggi.getText().trim()); } catch (Exception ignored) {}
-
-            LayangLayang layang = new LayangLayang(d1, d2, sA, sB);
-            layang.validasiInput();
-            LimasLayangLayang limas = new LimasLayangLayang(layang, t);
-            PrismaLayangLayang prisma = new PrismaLayangLayang(new LayangLayang(d1, d2, sA, sB), t);
-
-            // POLYMORPHISM demo di hasil
-            taHasil.setText("=== POLYMORPHISM DEMO ===\n\n");
-            Bentuk[] bentukArray = { layang, limas, prisma };
-            for (Bentuk b : bentukArray) {
-                taHasil.append("Tipe: Bentuk → Objek: " + b.getClass().getSimpleName() + "\n");
-                taHasil.append("  hitungLuas() = " + String.format("%.2f", b.hitungLuas()) + "\n");
+            int jumlahData = Integer.parseInt(input.trim());
+            if (jumlahData <= 0) {
+                JOptionPane.showMessageDialog(this, "Jumlah data harus > 0!", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
             }
-            taHasil.append("\nLihat log thread di bawah ↓\n");
-
+            
+            // Tampilkan info di panel hasil
+            taHasil.setText("=== MULTITHREADING MODE ===\n\n");
+            taHasil.append("Jumlah data per thread : " + jumlahData + "\n");
+            taHasil.append("Total data (3 thread)  : " + (jumlahData * 3) + "\n");
+            taHasil.append("Nilai random           : > 99.000 (Math.random())\n\n");
+            taHasil.append("POLYMORPHISM:\n");
+            taHasil.append("  Thread 1 → LayangLayang.hitungLuas()\n");
+            taHasil.append("  Thread 2 → LimasLayangLayang.hitungVolume()\n");
+            taHasil.append("  Thread 3 → PrismaLayangLayang.hitungVolume()\n");
+            taHasil.append("  Nama method sama, perilaku beda!\n\n");
+            taHasil.append("Lihat log thread di bawah ↓\n");
+            
             // Jalankan thread
             threadManager = new ThreadManager(taLog);
-            threadManager.jalankanSemuaThread(layang, limas, prisma);
+            threadManager.jalankanSemuaThread(jumlahData);
             btnStop.setEnabled(true);
-
+            
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Isi minimal Diagonal 1, 2, Sisi A, B!", "Error", JOptionPane.ERROR_MESSAGE);
-        } catch (InvalidInputException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Validasi Error", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Input harus angka bulat!", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
