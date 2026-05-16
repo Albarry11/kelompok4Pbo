@@ -280,7 +280,7 @@ public class MainFrame extends JFrame {
         taHasil.append("Lihat log thread di bawah.\n");
         
         // Jalankan thread
-        threadManager = new ThreadManager(taLog);
+        threadManager = new ThreadManager(taLog, taHasil);
         threadManager.jalankanSemuaThread(d1, d2, d3);
         btnStop.setEnabled(true);
     }

@@ -139,7 +139,7 @@ public class ThreadConfigDialog extends JDialog {
     }
     
     private JTextField createField() {
-        JTextField tf = new JTextField(12);
+        JTextField tf = new JTextField(16);
         tf.setFont(new Font("Monospaced", Font.PLAIN, 14));
         tf.setHorizontalAlignment(JTextField.RIGHT);
         

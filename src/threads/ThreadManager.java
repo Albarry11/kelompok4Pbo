@@ -9,6 +9,7 @@ import javax.swing.SwingUtilities;
 public class ThreadManager {
     
     private JTextArea logArea;
+    private JTextArea hasilArea;
     private Thread threadLayang;
     private Thread threadLimas;
     private Thread threadPrisma;
@@ -16,8 +17,9 @@ public class ThreadManager {
     private HitungThread runnableLimas;
     private HitungThread runnablePrisma;
     
-    public ThreadManager(JTextArea logArea) {
+    public ThreadManager(JTextArea logArea, JTextArea hasilArea) {
         this.logArea = logArea;
+        this.hasilArea = hasilArea;
     }
     
     public void jalankanSemuaThread(int dataLayang, int dataLimas, int dataPrisma) {
@@ -97,6 +99,28 @@ public class ThreadManager {
                 appendLog("  Total            |         | " + fmt(totalDone));
                 appendLog("=========================================================");
                 
+                // Tulis juga ringkasan hasil ke panel hasil (taHasil) jika tersedia
+                if (hasilArea != null) {
+                    final long elapsedMs = elapsed;
+                    final String layangLuas = fmtDouble(runnableLayang.getTotalLuas());
+                    final String limasLuas = fmtDouble(runnableLimas.getTotalLuas());
+                    final String limasVol = fmtDouble(runnableLimas.getTotalVolume());
+                    final String prismaLuas = fmtDouble(runnablePrisma.getTotalLuas());
+                    final String prismaVol = fmtDouble(runnablePrisma.getTotalVolume());
+
+                    SwingUtilities.invokeLater(() -> {
+                        hasilArea.setText("");
+                        hasilArea.append("MULTITHREADING - REKAP HASIL\n");
+                        hasilArea.append("========================================\n");
+                        hasilArea.append("Waktu eksekusi: " + fmt(elapsedMs) + " ms\n");
+                        hasilArea.append("----------------------------------------\n");
+                        hasilArea.append("Per-thread totals:\n");
+                        hasilArea.append("- " + runnableLayang.getNamaBentuk() + " : Total Luas = " + layangLuas + "\n");
+                        hasilArea.append("- " + runnableLimas.getNamaBentuk() + " : Total Luas = " + limasLuas + ", Total Volume = " + limasVol + "\n");
+                        hasilArea.append("- " + runnablePrisma.getNamaBentuk() + " : Total Luas = " + prismaLuas + ", Total Volume = " + prismaVol + "\n");
+                    });
+                }
+                
             } catch (InterruptedException e) {
                 appendLog("  [Monitor] Thread monitor terinterrupt.");
             }
@@ -112,6 +136,14 @@ public class ThreadManager {
         java.text.DecimalFormatSymbols sym = new java.text.DecimalFormatSymbols(new java.util.Locale("id", "ID"));
         sym.setGroupingSeparator('.');
         return new java.text.DecimalFormat("#,###", sym).format(angka);
+    }
+
+    /** Format double dengan pemisah ribuan '.' dan 2 desimal */
+    private String fmtDouble(double angka) {
+        java.text.DecimalFormatSymbols sym = new java.text.DecimalFormatSymbols(new java.util.Locale("id", "ID"));
+        sym.setGroupingSeparator('.');
+        sym.setDecimalSeparator(',');
+        return new java.text.DecimalFormat("#,##0.00", sym).format(angka);
     }
     
     /** Padding kanan agar kolom rata */
